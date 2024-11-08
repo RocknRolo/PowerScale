@@ -12,17 +12,20 @@
   Takes any [int16] number and translates it to a number between 1 and 7, representing one of the modes of the major scale. 
   1 = Ionian, 2 = Dorian, 3 = Phyrgian, 4 = Lydian, 5 = Mixolydian, 6 = Aeolian, 7 = Locrian
 
-.PARAMETER AsString
-  Changes the output type from [PSCustomObject] to a string representation of the scale.
-
 .PARAMETER MelodicMinor
   When this flag is set the script will return modes of the melodic minor scale instead of the major scale.
 
 .PARAMETER HarmonicMinor
   When this flag is set the script will return modes of the harmonic minor scale instead of the major scale.
 
+.PARAMETER Pentatonic
+  Removes the appropriate notes from the scale to make the scale pentatonic.
+
+.PARAMETER AsString
+  Changes the output type from [PSCustomObject] to a string representation of the scale. Can be abbreviated to -Ass, if you are so inclined.
+
 .NOTES
-  Version:        0.2
+  Version:        0.3
   Author:         RockNRolo (Roel Kemp)
   Website:        rocknrolo.github.io
   Creation Date:  01-11-2024
@@ -37,6 +40,7 @@
   [int16]$Mode = 1,
   [switch]$MelodicMinor,
   [switch]$HarmonicMinor,
+  [switch]$Pentatonic,
   [switch]$AsString
 )
 
@@ -166,6 +170,18 @@ for ($i = 1; $i -lt $Steps.Length; $i++) {
   $Scale += [PSCustomObject]@{Natural = $NextWholeNatural; FlatSharp = $FlatSharp;};
 }
 
+if ($Pentatonic) {
+  $DelI1 = (3 - ($Mode - 1) + $Scale.Length) % $Scale.Length;
+  $DelI2 = (6 - ($Mode - 1) + $Scale.Length) % $Scale.Length;
+  $PentScale = @();
+  for ($i = 0; $i -lt $Scale.Length; $i++) {
+    if (-not ($i -eq $DelI1 -or $i -eq $DelI2)) {
+      $PentScale += $Scale[$i];
+    }
+  }
+  $Scale = $PentScale;
+}
+
 if ($AsString) {
   $StrScale = "";
   for ($i = 0; $i -lt $Scale.Length; $i++) {
@@ -181,6 +197,5 @@ return $Scale;
 
 <#
 Possible upgrades:
-- Add support for Pentatonic scales.
 - Add visual display
 #>
